@@ -4,44 +4,65 @@ class PicturesController < ApplicationController
   # GET /pictures or /pictures.json
   def index
     @pictures = Picture.all
+
+    respond_to do |format|
+      format.html
+      format.json {render json: @pictures}
+    end
   end
 
   # GET /pictures/1 or /pictures/1.json
   def show
+    @picture = Picture.find(params[:id])
+
+    respond_to do |format|
+      format.html
+      format.json {render json: @picture}
+    end
   end
 
   # GET /pictures/new
   def new
     @picture = Picture.new
+
+    respond_to do |format|
+      format.html
+      format.json {render json: @picture}
+    end
   end
 
   # GET /pictures/1/edit
   def edit
+    @picture = Picture.find(params[:id])
   end
 
   # POST /pictures or /pictures.json
   def create
-    @picture = Picture.new(picture_params)
+    ## carrierwave as single
+     @picture = Picture.new(params[:picture])
 
-    respond_to do |format|
       if @picture.save
-        format.html { redirect_to @picture, notice: "Picture was successfully created." }
-        format.json { render :show, status: :created, location: @picture }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @picture.errors, status: :unprocessable_entity }
-      end
-    end
+       flash[:notice] = "Successfully created picture."
+      redirect_to @picture
+   else
+   render :action => 'new'
+
+   @picture = Picture.new(:title => params[:file])
+   @picture.save!
+   render :nothing => true
+ end
   end
 
   # PATCH/PUT /pictures/1 or /pictures/1.json
   def update
+    @picture = Picture.find(params[:id])
+
     respond_to do |format|
-      if @picture.update(picture_params)
-        format.html { redirect_to @picture, notice: "Picture was successfully updated." }
-        format.json { render :show, status: :ok, location: @picture }
+      if @picture.update_attributes(params[:picture])
+        format.html { redirect_to @picture, notice: 'picture was successfully updated.' }
+        format.json { head :no_content }
       else
-        format.html { render :edit, status: :unprocessable_entity }
+        format.html { render action: "edit" }
         format.json { render json: @picture.errors, status: :unprocessable_entity }
       end
     end
@@ -49,14 +70,15 @@ class PicturesController < ApplicationController
 
   # DELETE /pictures/1 or /pictures/1.json
   def destroy
+    @picture = Picture.find(params[:id])
     @picture.destroy!
 
     respond_to do |format|
-      format.html { redirect_to pictures_path, status: :see_other, notice: "Picture was successfully destroyed." }
+      format.html { redirect_to pictures_url }
       format.json { head :no_content }
     end
   end
-
+end
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_picture
