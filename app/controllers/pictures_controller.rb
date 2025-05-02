@@ -14,7 +14,7 @@ class PicturesController < ApplicationController
   # GET /pictures/1 or /pictures/1.json
   def show
     @picture = Picture.find(params[:id])
-
+    #  binding.pry
     respond_to do |format|
       format.html
       format.json {render json: @picture}
@@ -38,20 +38,20 @@ class PicturesController < ApplicationController
 
   # POST /pictures or /pictures.json
   def create
-    ## carrierwave as single
-     @picture = Picture.new(params[:picture])
+    if params[:file].present?
+      @picture = Picture.new(title: params[:file])
+    else
+      @picture = Picture.new(picture_params)
+    end
 
-      if @picture.save
-       flash[:notice] = "Successfully created picture."
-      redirect_to @picture
-   else
-   render :action => 'new'
-
-   @picture = Picture.new(:title => params[:file])
-   @picture.save!
-   render :nothing => true
- end
+    if @picture.save
+      flash[:notice] = "Successfully created picture."
+      redirect_to "/pictures/#{@picture.id}"
+    else
+      render :new
+    end
   end
+
 
   # PATCH/PUT /pictures/1 or /pictures/1.json
   def update
@@ -87,6 +87,5 @@ end
 
     # Only allow a list of trusted parameters through.
     def picture_params
-      params.expect(picture: [ :title ])
+      params.require(:picture).permit(:title)
     end
-end

@@ -1,11 +1,68 @@
-<% content_for :title, "New picture" %>
-
-<h1>New picture</h1>
-
-<%= render "form", picture: @picture %>
-
-<br>
-
-<div>
-  <%= link_to "Back to pictures", pictures_path %>
+<div id="container">
+  <h2>Upload Pictures</h2>
+  <ul id="filelist">No files selected</ul>
+  <br />
+  <a id="pickfiles" href="javascript:;">[Select Pictures]</a>
+  <a id="uploadfiles" href="javascript:;">[Upload Pictures]</a>
+  <pre id="console"></pre>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var uploader = new plupload.Uploader({
+      runtimes: 'html5,flash,silverlight,html4',
+      browse_button: 'pickfiles',
+      container: document.getElementById('container'),
+      url: '<%= pictures_path %>',
+      multipart: true,
+      multipart_params: {
+        authenticity_token: '<%= form_authenticity_token %>'
+      },
+      filters: {
+        mime_types: [
+          {title: "Image files", extensions: "jpg,jpeg,png,gif"}
+        ],
+        max_file_size: '10mb',
+        prevent_duplicates: true
+      },
+      init: {
+        PostInit: function () {
+          document.getElementById('filelist').innerHTML = '';
+          document.getElementById('uploadfiles').onclick = function () {
+            uploader.start();
+            return false;
+          };
+        },
+        FilesAdded: function (up, files) {
+          plupload.each(files, function (file) {
+            var listItem = document.createElement('li');
+            listItem.id = file.id;
+            listItem.innerHTML = file.name + ' (' + plupload.formatSize(file.size) + ')';
+            
+            var progressContainer = document.createElement('div');
+            progressContainer.className = 'progress';
+            
+            var progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            progressBar.id = file.id + '_progress';
+            
+            progressContainer.appendChild(progressBar);
+            listItem.appendChild(progressContainer);
+            
+            document.getElementById('filelist').appendChild(listItem);
+          });
+        },
+        UploadProgress: function (up, file) {
+          var progressBar = document.getElementById(file.id + '_progress');
+          progressBar.style.width = file.percent + '%';
+        },
+        Error: function (up, err) {
+          document.getElementById('console').innerHTML += "\nError #" + err.code + ": " + err.message;
+        }
+      }
+    });
+
+    uploader.init();
+  });
+</script>
+
+<%= image_tag(@picture.title_url) if @picture.title? %>

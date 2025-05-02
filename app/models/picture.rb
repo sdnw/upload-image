@@ -1,5 +1,5 @@
 class Picture < ApplicationRecord
-  attr_accessible :title, :title_cache
+  attr_accessor :title, :title_cache
 
   mount_uploader :title, PhotoUploader
 end

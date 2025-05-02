@@ -8,3 +8,9 @@
 
   <%= button_to "Destroy this picture", @picture, method: :delete %>
 </div>
+
+<% if @picture.title.present? %>
+  <%= image_tag @picture.title.url %>
+<% else %>
+  <p>No image uploaded.</p>
+<% end %>
