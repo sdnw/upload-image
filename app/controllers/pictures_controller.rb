@@ -38,19 +38,20 @@ class PicturesController < ApplicationController
 
   # POST /pictures or /pictures.json
   def create
-    if params[:file].present?
-      @picture = Picture.new(title: params[:file])
-    else
-      @picture = Picture.new(picture_params)
-    end
+    @picture = if params[:file].present?
+                 Picture.new(title: params[:file])
+               else
+                 Picture.new(picture_params)
+               end
 
     if @picture.save
-      flash[:notice] = "Successfully created picture."
-      redirect_to "/pictures/#{@picture.id}"
+      # Return JSON with the redirect URL
+      render json: { redirect_url: picture_path(@picture) }, status: :ok
     else
-      render :new
+      render json: { errors: @picture.errors.full_messages }, status: :unprocessable_entity
     end
   end
+
 
 
   # PATCH/PUT /pictures/1 or /pictures/1.json
