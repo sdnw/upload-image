@@ -6,11 +6,23 @@
 
 <div id="pictures">
   <% @pictures.each do |picture| %>
-    <%= render picture %>
+    <%= "title: #{picture.title}" %>
     <p>
       <%= link_to "Show this picture", picture %>
     </p>
   <% end %>
 </div>
 
-<%= link_to "New picture", new_picture_path %>
+<div class="actions mb-3">
+  <%= link_to 'New Picture', new_picture_path, class: 'btn btn-success' %>
+  <%= button_to 'Generate CSV',
+                export_all_pictures_path(format: :csv),
+                method: :get,
+                form: { target: '_blank' },
+                class: 'btn btn-outline-primary' %>
+</div>
+
+
+
+
+

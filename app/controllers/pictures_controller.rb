@@ -1,92 +1,93 @@
-class PicturesController < ApplicationController
-  before_action :set_picture, only: %i[ show edit update destroy ]
+# app/controllers/pictures_controller.rb
+require 'csv'
 
-  # GET /pictures or /pictures.json
+class PicturesController < ApplicationController
+  before_action :set_picture, only: [:show, :edit, :update, :destroy, :export]
+
+  # GET /pictures
+  # HTML only
   def index
     @pictures = Picture.all
-
-    respond_to do |format|
-      format.html
-      format.json {render json: @pictures}
-    end
   end
 
-  # GET /pictures/1 or /pictures/1.json
+  # GET /pictures/export_all.csv
+  # Streams a CSV of all pictures when the user clicks “Generate CSV”
+  def export_all
+    csv_data = generate_csv(Picture.all)
+
+    send_data csv_data,
+              filename: "pictures-#{Date.today}.csv",
+              type: "text/csv; charset=utf-8"
+  end
+
+  # GET /pictures/:id/export.csv
+  # Streams a CSV for a single picture
+  def export
+    csv_data = generate_csv([@picture])
+
+    send_data csv_data,
+              filename: "picture-#{@picture.id}-#{Date.today}.csv",
+              type: "text/csv; charset=utf-8"
+  end
+
+  # GET /pictures/:id
   def show
-    @picture = Picture.find(params[:id])
-    #  binding.pry
-    respond_to do |format|
-      format.html
-      format.json {render json: @picture}
-    end
   end
 
   # GET /pictures/new
   def new
     @picture = Picture.new
-
-    respond_to do |format|
-      format.html
-      format.json {render json: @picture}
-    end
   end
 
-  # GET /pictures/1/edit
-  def edit
-    @picture = Picture.find(params[:id])
-  end
-
-  # POST /pictures or /pictures.json
+  # POST /pictures
   def create
-    @picture = if params[:file].present?
-                 Picture.new(title: params[:file])
-               else
-                 Picture.new(picture_params)
-               end
+    @picture = Picture.new(picture_params)
 
     if @picture.save
-      # Return JSON with the redirect URL
-      render json: { redirect_url: picture_path(@picture) }, status: :ok
+      redirect_to @picture, notice: 'Picture was successfully created.'
     else
-      render json: { errors: @picture.errors.full_messages }, status: :unprocessable_entity
+      render :new
     end
   end
 
+  # GET /pictures/:id/edit
+  def edit
+  end
 
-
-  # PATCH/PUT /pictures/1 or /pictures/1.json
+  # PATCH/PUT /pictures/:id
   def update
-    @picture = Picture.find(params[:id])
+    if @picture.update(picture_params)
+      redirect_to @picture, notice: 'Picture was successfully updated.'
+    else
+      render :edit
+    end
+  end
 
-    respond_to do |format|
-      if @picture.update_attributes(params[:picture])
-        format.html { redirect_to @picture, notice: 'picture was successfully updated.' }
-        format.json { head :no_content }
-      else
-        format.html { render action: "edit" }
-        format.json { render json: @picture.errors, status: :unprocessable_entity }
+  # DELETE /pictures/:id
+  def destroy
+    @picture.destroy
+    redirect_to pictures_path, notice: 'Picture was successfully destroyed.'
+  end
+
+  private
+
+  # DRY CSV generation for any set of pictures
+  def generate_csv(pictures)
+    CSV.generate(headers: true) do |csv|
+      csv << %w[id title created_at]
+      pictures.find_each do |pic|
+        csv << [pic.id, pic.title, pic.created_at]
       end
     end
   end
 
-  # DELETE /pictures/1 or /pictures/1.json
-  def destroy
+  # Load @picture for member actions
+  def set_picture
     @picture = Picture.find(params[:id])
-    @picture.destroy!
+  end
 
-    respond_to do |format|
-      format.html { redirect_to pictures_url }
-      format.json { head :no_content }
-    end
+  # Strong parameters
+  def picture_params
+    params.require(:picture).permit(:title)
   end
 end
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_picture
-      @picture = Picture.find(params.expect(:id))
-    end
-
-    # Only allow a list of trusted parameters through.
-    def picture_params
-      params.require(:picture).permit(:title)
-    end
