@@ -65,3 +65,5 @@ group :test do
 end
 
 gem 'pry', '~> 0.15.0'
+
+gem 'csv', '~> 3.0'

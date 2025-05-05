@@ -1,102 +1,30 @@
-<h1>Upload Pictures</h1>
+<% content_for :title, 'Upload Picture' %>
 
-<div id="container">
-  <ul id="filelist">No files selected</ul>
-  <br/>
+<h1>Upload Picture</h1>
 
-  <a id="pickfiles" href="javascript:;">[Select Pictures]</a>
-  <a id="uploadfiles" href="javascript:;">[Upload Pictures]</a>
+<%= form_with model: @picture,
+              url: pictures_path,
+              local: true,
+              html: { multipart: true, class: 'upload-form' } do |f| %>
 
-  <pre id="console"></pre>
-</div>
+  <% if @picture.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@picture.errors.count, "error") %> prohibited this picture from being saved:</h2>
+      <ul>
+        <% @picture.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
 
-<%= image_tag(@picture.title.url) if @picture.title? %>
+  <div class="field">
+    <%= f.label :title, "Select Image to Upload" %><br>
+    <%= f.file_field :title, required: true %>
+  </div>
 
-<script>
-  function initUploader() {
-    // Destroy old uploader if present
-    if (window.uploader) {
-      window.uploader.destroy();
-    }
-
-    // Create a new Plupload Uploader instance
-    window.uploader = new plupload.Uploader({
-      runtimes: 'html5,flash,silverlight,html4',
-      browse_button: 'pickfiles',
-      container:    document.getElementById('container'),
-      url:          '<%= pictures_path %>',
-      multipart:    true,
-      multipart_params: {
-        authenticity_token: '<%= form_authenticity_token %>'
-      },
-      filters: {
-        mime_types: [
-          { title: "Image files", extensions: "jpg,jpeg,png,gif" }
-        ],
-        max_file_size: '10mb',
-        prevent_duplicates: true
-      },
-      init: {
-        PostInit: function() {
-          document.getElementById('filelist').innerHTML = '';
-          document.getElementById('uploadfiles').onclick = function() {
-            if (uploader.files.length > 0) {
-              uploader.start();
-            } else {
-              alert("Please select files to upload.");
-            }
-            return false;
-          };
-        },
-
-        FilesAdded: function(up, files) {
-          plupload.each(files, function(file) {
-            var li = document.createElement('li');
-            li.id = file.id;
-            li.innerHTML = file.name + ' (' + plupload.formatSize(file.size) + ')';
-
-            var prog = document.createElement('div');
-            prog.className = 'progress';
-            var bar  = document.createElement('div');
-            bar.className = 'progress-bar';
-            bar.id = file.id + '_progress';
-
-            prog.appendChild(bar);
-            li.appendChild(prog);
-            document.getElementById('filelist').appendChild(li);
-          });
-        },
-
-        UploadProgress: function(up, file) {
-          document.getElementById(file.id + '_progress').style.width =
-            file.percent + '%';
-        },
-
-        FileUploaded: function(up, file, info) {
-          try {
-            var data = JSON.parse(info.response);
-            if (data.redirect_url) {
-              window.location = data.redirect_url;
-            }
-          } catch (e) {
-            console.error("Could not parse upload response:", e);
-          }
-        },
-
-        Error: function(up, err) {
-          document.getElementById('console').innerText +=
-            "\nError #" + err.code + ": " + err.message;
-        }
-      }
-    });
-
-    uploader.init();
-  }
-
-  // Initialize on full page load...
-  document.addEventListener('DOMContentLoaded', initUploader);
-
-  // ...and on Turbolinks / Turbo visits
-  document.addEventListener('turbolinks:load', initUploader);
-  document.addEventListener('turbo:load',    initUploader);
-</script>
+  <div class="actions">
+    <%= f.submit 'Upload Picture', class: 'btn btn-primary' %>
+    <%= link_to 'Back to All Pictures', pictures_path, class: 'btn btn-secondary' %>
+  </div>
+<% end %>
