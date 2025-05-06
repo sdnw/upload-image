@@ -15,10 +15,10 @@
 
 <div class="actions mb-3">
   <%= link_to 'New Picture', new_picture_path, class: 'btn btn-success' %>
-  <%= button_to 'Generate CSV',
-                export_all_pictures_path(format: :csv),
-                method: :get,
-                form: { target: '_blank' },
+  <%#— Replace “Generate CSV” download button with an email button —%>
+  <%= button_to 'Email CSV to Me',
+                email_csv_pictures_path,
+                method: :post,
                 class: 'btn btn-outline-primary' %>
 </div>
 
