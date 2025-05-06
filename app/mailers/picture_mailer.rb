@@ -1,5 +1,5 @@
 class PictureMailer < ApplicationMailer
-  default from: 'strokinmyshii@mail.com'
+  default from: 'stevendawn98@gmail.com'
 
   def all_pictures_csv
     csv_data = Picture.to_csv
