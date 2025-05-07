@@ -4,6 +4,11 @@ require 'csv'
 class PicturesController < ApplicationController
   before_action :set_picture, only: [:show, :edit, :update, :destroy, :export]
 
+  def email_csv
+    PictureMailer.all_pictures_csv.deliver_later
+    redirect_to pictures_path, notice: "CSV is being generated and will arrive in your inbox shortly."
+  end
+
   # GET /pictures
   # HTML only
   def index
