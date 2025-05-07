@@ -2,14 +2,14 @@ class PictureMailer < ApplicationMailer
   default from: 'stevendawn98@gmail.com'
 
   def all_pictures_csv
-    csv_data = Picture.to_csv
-    attachments["pictures-#{Date.today}"] = {
-      mime_type: "text/csv; charset=utf-8",
-      content: csv_data
+    attachments["pictures-#{Date.today}.csv"] = {
+      mime_type: 'text/csv; charset=utf-8',
+      content:    Picture.to_csv
     }
 
-    recipients = ['stevendawn98@gmail.com']
-
-    mail(to: recipients, subject: "Your pictures CSV export")
+   mail(
+    to: ['stevendawn98@gmail.com'],
+    subject: 'Your pictures CSV Export'
+   )
   end
 end

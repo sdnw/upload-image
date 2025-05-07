@@ -1,19 +1,28 @@
 # config/routes.rb
-require "sidekiq/web"
+require 'sidekiq/web'               # Sidekiq’s Sinatra-based Web UI :contentReference[oaicite:0]{index=0}
+require 'letter_opener_web'         # Letter Opener Web UI for previewing mails :contentReference[oaicite:1]{index=1}
+
 Rails.application.routes.draw do
-  mount Sidekiq::Web => "/sidekiq"
+  # Mount Sidekiq Web UI at /sidekiq
+  mount Sidekiq::Web => '/sidekiq'  # accessible at http://localhost:3000/sidekiq :contentReference[oaicite:2]{index=2}
+
+  # Mount LetterOpenerWeb only in development for email previews
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: '/letter_opener'  # browse sent emails at /letter_opener :contentReference[oaicite:3]{index=3}
+  end
+
   resources :pictures do
     collection do
-      # Bulk-export route (no default CSV on /pictures)
-      post :email_csv
-      get :export_all
+      post :email_csv    # POST /pictures/email_csv → PicturesController#email_csv
+      get  :export_all   # GET  /pictures/export_all(.:format) → PicturesController#export_all
     end
 
     member do
-      # Per-picture export
+      # GET /pictures/:id/export.csv → PicturesController#export
       get :export, defaults: { format: :csv }
     end
   end
 
-  get 'up' => 'rails/health#show', as: :rails_health_check
+  # Health check endpoint
+  get 'up', to: 'rails/health#show', as: :rails_health_check
 end
