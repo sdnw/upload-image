@@ -68,7 +68,7 @@ end
 
 gem 'pry', '~> 0.15.0'
 
-gem 'csv', '~> 3.0'
+gem 'csv', '~> 3.3'
 
 gem "sidekiq", "~> 8.0"
 
